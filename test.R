@@ -1,1 +1,0 @@
-setwd("/Users/jacqueline/Dropbox/UW-M/628 Data Science Practium/Module 1")
