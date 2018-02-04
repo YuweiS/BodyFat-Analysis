@@ -29,5 +29,5 @@ Biceps (extended) circumference (cm)
 Forearm circumference (cm)  
 Wrist circumference (cm)  
 
-*new_BodyFat.Rdata* is the Rdata after removing all outliers grom the original dataset.
+*new_BodyFat.Rdata* is the Rdata after removing all outliers from the original dataset.
 
