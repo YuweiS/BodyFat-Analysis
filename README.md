@@ -1,4 +1,5 @@
 ## BodyFat-Analysis Porject
+**Shiwei Cao**, **Shurong Gu**, **Yuwei Sun**
 
 This project aims of coming up with a simple, precise, and accurate way of deteriming body fat percentage of males based on readily available clinical measurements. *BodyFat Analysis.ipynb* is an executive summary of the data analysis process and findings in Jupyter Notebook pattern.
 There are three folders provding more details in our main project, *code*, *image* and *data*
