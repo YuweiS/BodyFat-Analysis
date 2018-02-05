@@ -1,7 +1,8 @@
 ## BodyFat-Analysis Porject
 **Shiwei Cao**, **Shurong Gu**, **Yuwei Sun**
 
-This project aims of coming up with a simple, precise, and accurate way of determining body fat percentage of males based on readily available clinical measurements. *BodyFat Analysis.ipynb* is an executive summary of the data analysis process and findings in Jupyter Notebook pattern.
+This project aims of coming up with a simple, precise, and accurate way of determining body fat percentage of males based on readily available clinical measurements. *BodyFat Analysis.ipynb* is an executive summary of the data analysis process and findings in Jupyter Notebook pattern. The result of analysis shows that the percentage of body fat of a male is strongly related with *Weight*, *Wrist* and *Abdomen*.
+
 There are three folders providing more details in our main project, *code*, *image* and *data*
 ### code
 There are 4 R code files *pre-clean.R*, *models.R*, *lasso.R* and *"multiplot.R"* in this folder. *pre-clean.R* is the file which cleans original data, removes outliers and comes up with a new dataset *new_BodyFat.Rdata*. *models.R* shows the process of using *new_BodyFat* to analyze and select models. *lasso.R* contains other methods like Lasso to do variable selection. *"multiplot.R"* is a reference plotting code helping us to make better graghs. 
@@ -31,5 +32,3 @@ Wrist circumference (cm)
 
 *new_BodyFat.Rdata* is the Rdata after removing all outliers from the original dataset.
 
-### presentation
-This folder contains the presentation slides and the Rmd file which generates the presentation slides.
