@@ -53,3 +53,33 @@ lambda <- l$lambda[39]
 coeff <- coef(l)[,39]
 coeff <- coeff[coeff!=0]
 min.mse <- (Yhat[,39]-test$BODYFAT)^2 %>% mean
+
+
+data<-train
+m<-lm(BODYFAT ~ WEIGHT + ABDOMEN + WRIST,data = data)
+df=data.frame(p=predict(m),r=rstandard(m))
+df$lasso<-"Standardized Residual Plot"
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+d1<-ggplot(df,aes(p,r))+
+  geom_point(col =cbPalette[6],size=2,pch=23)+
+  geom_hline(yintercept = 0,col="black",lwd=0.5)+
+  xlab("Predicted Body Fat %")+
+  ylab("Standardized Residuals")
+d1<-d1 + facet_grid(. ~ lasso)+
+  theme(strip.background = element_rect(fill=color1()),
+           strip.text = element_text(size=15, colour="white"),
+           panel.grid.major.x = element_blank(),
+           panel.grid.minor.x = element_blank())
+
+y <- quantile(m$resid[!is.na(m$resid)], c(0.25, 0.75))
+x <- qnorm(c(0.25, 0.75))
+slope <- diff(y)/diff(x)
+int <- y[1L] - slope * x[1L]
+
+d2<-ggplot(m, aes(sample=.resid)) +
+  stat_qq(col =cbPalette[6],size=2,pch=21)+
+  geom_abline(slope = slope, intercept = int,col="black",lwd=0.5)+
+  ggtitle("Normal Q-Q Plot")
+
+
+
