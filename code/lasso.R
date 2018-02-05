@@ -35,7 +35,9 @@ for(i in 1:(length(x.break)-1)){
 }
 x.break[i+1] <- (x.break[i+1]+min(gg$log_lambda))/2
 p <- ggplot(gg, aes(x=log_lambda, y=mse)) + 
-  geom_point(col =cbPalette[6]) + 
+  geom_point(col =cbPalette[6])+
+  geom_point(aes(x=log_lambda[39],y=mse[39]),
+             col = cbPalette[2],size=1.5,pch=19)+
   geom_vline(xintercept=gg$log_lambda[!is.na(gg$df)], 
              col=cbPalette[1]) + 
   geom_label(aes(x=x.break, 
