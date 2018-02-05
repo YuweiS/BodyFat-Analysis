@@ -1,0 +1,198 @@
+---
+title: "BodyFat Analysis"
+author: "Shiwei Cao, Shurong Gu, Yuwei Sun"
+date: "February 2, 2018"
+output: beamer_presentation
+---
+```{r setup, include=FALSE}
+require(viridis)
+highlight = function(x,color='blue')
+{
+  paste("<b><font color=",color,">",x,"</font></b>",sep="")  
+}
+blue = function(x) { highlight(x,color='blue')}
+green = function(x) { highlight(x,color='forestgreen')}
+red = function(x) { highlight(x,color='red')}
+```
+
+## Procedure
+
+* **Data preprocessing**: EDA, data cleaning
+* **Statistical Modeling**: 
+     * Multiple Linear Regression
+          * Variable Selection: stepwise method
+          * Model Diagnosis
+     * Lasso
+* **Model selection**:
+     * Make predictions on validation set and choose the best model (the one with smallest mse)
+* **Model Interpretation**, **"rule of thumb"**
+* **Strengths and weaknesses**
+
+## Explore the data
+```{r echo=FALSE,fig.align="center"}
+library(png)
+library(grid)
+img <- readPNG("data.png")
+ grid.raster(img)
+```
+
+## Data Cleaning
+
+```{r, echo = FALSE,fig.width=5, fig.height=4.5}
+BodyFat=read.csv("BodyFat.csv",header=T)
+suppressMessages(library(tidyverse))
+d=data.frame(x=1/BodyFat$DENSITY,y=BodyFat$BODYFAT)
+options(repr.plot.width=3, repr.plot.height=3)
+ggplot(d,aes(x,y))+geom_point(col="blue")+
+   scale_y_continuous(name="Bodyfat")+
+   scale_x_continuous(name="Density")+
+   theme_bw()+
+   theme(
+    axis.title.x = element_text(size=14,face="bold"),
+    axis.title.y = element_text(size=14,face="bold"),
+    axis.text.y = element_text(face="bold",size=12),strip.text = element_text(face="bold",size=12),
+    axis.text.x = element_text(face="bold",size=12))
+```
+
+##
+
+#####  We decide to remove 3 points for further analysis:
+###### The one with BODYFAT=0; the one with HEIGHT=29.5 inches (only 75cm tall); the one with WEIGHT=363.15 pounds
+```{r, echo = FALSE,message=FALSE,fig.width=7, fig.height=4.5}
+# library(tidyverse);library(plotly)
+# options(repr.plot.width=4, repr.plot.height=4)
+# p1 <- plot_ly(BodyFat, x = ~BODYFAT) %>% add_histogram()
+# p2 <- plot_ly(BodyFat, x = ~WEIGHT) %>% add_histogram()
+# p3 <- plot_ly(BodyFat, x = ~HEIGHT) %>% add_histogram()
+# p1
+# subplot(p2, p3)
+p1=ggplot(BodyFat,aes(BODYFAT))+geom_histogram(binwidth = 3,color="white",fill="hotpink")+
+   theme_bw()+
+   theme(
+    axis.title.x = element_text(size=14,face="bold"),
+    axis.title.y = element_text(size=14,face="bold"),
+    axis.text.y = element_text(face="bold",size=12),strip.text = element_text(face="bold",size=12),
+    axis.text.x = element_text(face="bold",size=12))
+
+p2=ggplot(BodyFat,aes(WEIGHT))+geom_histogram(binwidth = 10,color="white")+
+   theme_bw()+
+   theme(
+    axis.title.x = element_text(size=14,face="bold"),
+    axis.title.y = element_text(size=14,face="bold"),
+    axis.text.y = element_text(face="bold",size=12),strip.text = element_text(face="bold",size=12),
+    axis.text.x = element_text(face="bold",size=12))
+
+p3=ggplot(BodyFat,aes(HEIGHT))+geom_histogram(binwidth = 1,color="white")+
+   theme_bw()+
+   theme(
+    axis.title.x = element_text(size=14,face="bold"),
+    axis.title.y = element_text(size=14,face="bold"),
+    axis.text.y = element_text(face="bold",size=12),strip.text = element_text(face="bold",size=12),
+    axis.text.x = element_text(face="bold",size=12))
+source("multiplot.R")
+multiplot(p1,p2,p3,layout=matrix(data=c(1,2,1,3),nrow=2))
+```
+
+## Variable Selection
+
+- Divide the whole data into train (80%) and validation (20%) set
+- Train set:
+    Use several different methods to choose the best subset of variables
+ 1.  Mallow's Cp: leaps() in R (do an exhaustive search)
+ 2.  Stepwise regression based on AIC 
+ 3.  Stepwise regression based on BIC    
+- Validation set: 
+    See if the models generalize well on unseen data
+    
+```{r, echo=FALSE}
+mse=data.frame(Model=c("Mallow's Cp","AIC","BIC"),MSE=c(15.069,14.702,13.989))
+mse
+```
+
+## BIC results
+```{r echo=FALSE,fig.align="center"}
+library(png)
+library(grid)
+img <- readPNG("BIC.png")
+ grid.raster(img)
+```
+
+
+## Variables selected by BIC:
+#### At this point, we come up with a multiple linear regression:
+
+
+* `r blue ("_Bodyfat_ ~ _Abdomen_ + _Wrist_ + _Weight_")`
+
+```{r echo=FALSE,fig.align="center"}
+img <- readPNG("bodyfat.png")
+ grid.raster(img)
+```
+
+## Prediction on validation set
+```{r,echo=FALSE}
+BodyFat=BodyFat[-c(39,42,182),]
+set.seed(100)
+train_index=sample(1:249,size=200,replace=F)
+train=BodyFat[train_index,]
+test=BodyFat[-train_index,]
+model.BIC<-lm(BODYFAT ~ ABDOMEN + WRIST + WEIGHT,data = train)
+plot(predict(model.BIC,test[,-c(1,2,3)]),test[,2],pch=23,bg="red",cex=0.8,
+    xlab="Predicted Body Fat %", ylab="Real Body Fat %",main="Prediction Plot")
+abline(a=0,b=1,col="black",lwd=3)
+```
+
+
+## Model Diagnosis
+#### Adjusted R-squared for the final model: 0.7175
+#### Linear regression assumptions?
+```{r,echo=FALSE}
+layout(matrix(c(1,2),nrow=1))
+plot(predict(model.BIC),rstandard(model.BIC),pch=23,bg="red",cex=1,
+    xlab="Predicted Body Fat %", ylab="Standardized Residuals",main="Standardized Residual Plot")
+options(repr.plot.width=7, repr.plot.height=3.5)
+abline(a=0,b=0,col="black",lwd=3)
+qqnorm(rstandard(model.BIC),pch=23,bg="red",cex=1)
+abline(a=0,b=1,col="black",lwd=3)
+```
+
+## Still exist multicollinearity?
+```{r,echo=FALSE,message=FALSE}
+data<-train[,-1]
+m2<-lm(BODYFAT ~ WEIGHT + ABDOMEN + WRIST,data = data)
+library(car)
+```
+```{r}
+vif(m2)
+```
+
+##Another approach: Lasso
+
+$$\min\limits_{\beta} \sum\limits_{i=1}^N (y_i-\beta_0-\beta_1x_i - \dots - \beta_px_p)^2 +\lambda \left|\sum\limits_{j=1}^p \beta_j \right| $$
+```{r echo=FALSE,fig.align="center"}
+img <- readPNG("lasso.png")
+ grid.raster(img)
+```
+
+
+## Conclusion
+* Our proposed linear model to predict body fat %:
+
+  (BodyFat %)= $-23.7937+0.8519\times Abdomen-1.2582\times Wrist-0.0735\times Weight$
+
+* Possible rule of thumb:
+    + Your *% Bodyfat* = 
+    + Your *abdomen* circumference (cm) $\times 0.85$
+    + minus *wrist* circumference (cm) $\times 1.26$
+    + minus *weight* (lbs) $\times 0.07$
+    + minus 24
+*  For a normal graduate male student, with circumferences: Abdomen=85cm, Wrist=18cm, Weight=130lbs, his predicted body fat percentage would be around 16.43%. There is a 95% probability that his body fat is between 8.26% and 24.59%.
+  
+## Strengths and Weaknesses
+- Strengths
+ 1.  Use a separate validation set to avoid overfitting
+ 2.  Simple, easy to interpret
+
+- Weaknesses
+ 1.  May lose information using only 200 data points 
+ 2.  Trade off between simplicity and precision
